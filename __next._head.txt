@@ -1,0 +1,466 @@
+// Datos mockup para el Tablero de Decisión — Empaque Farmacéutico Digitalizado (PharmaXXX)
+// Basado en el caso "Digitalización del proceso de empaque en industria farmacéutica" (Grupo 10)
+
+export type EstadoOrden = "En ejecución" | "En revisión" | "Liberado" | "Detenido" | "Programado"
+export type Severidad = "Crítica" | "Mayor" | "Menor"
+
+export type EstadoOEE = "Operativa" | "Atención" | "Detenida"
+
+export interface Linea {
+  id: string
+  nombre: string
+  producto: string
+  lote: string
+  estado: EstadoOrden
+  avance: number // %
+  excepcionesAbiertas: number
+  reconciliacionPendiente: boolean
+  tiempoLiberacionEstimado: string
+  operador: string
+  // OEE = Disponibilidad x Rendimiento x Calidad
+  oee: number // %
+  disponibilidad: number // %
+  rendimiento: number // %
+  calidad: number // % (First Pass Yield)
+  velocidad: number // unidades/min
+}
+
+export interface Firma {
+  id: string
+  documento: string
+  paso: string
+  lote: string
+  linea: string
+  responsable: string
+  rol: string
+  vence: string // hora límite
+  urgente: boolean
+}
+
+export type TipoAlerta = "Crítica" | "Advertencia" | "Info"
+
+export interface Alerta {
+  id: string
+  tipo: TipoAlerta
+  titulo: string
+  descripcion: string
+  linea: string
+  haceMin: number
+  resuelta: boolean
+}
+
+export interface Excepcion {
+  id: string
+  linea: string
+  lote: string
+  descripcion: string
+  severidad: Severidad
+  hora: string
+  estado: "Abierta" | "En análisis" | "Resuelta"
+}
+
+export interface Lote {
+  id: string
+  producto: string
+  linea: string
+  cantidad: number
+  estado: EstadoOrden
+  inicio: string
+  reconciliacion: number // % de materiales reconciliados
+}
+
+export const kpis = {
+  ordenesActivas: 8,
+  ordenesActivasDelta: +2,
+  excepcionesAbiertas: 14,
+  excepcionesAbiertasDelta: -3,
+  lotesEnRevision: 5,
+  lotesEnRevisionDelta: -1,
+  tiempoLiberacionPromedio: "1.2 h",
+  tiempoLiberacionDeltaTexto: "vs 15 días (papel)",
+  reconciliacionAutomatica: 96.4, // %
+  reconciliacionDelta: +1.8,
+  cumplimientoGMP: 99.2, // %
+  cumplimientoDelta: +0.4,
+}
+
+export const lineas: Linea[] = [
+  {
+    id: "L01",
+    nombre: "Línea 01 — Blíster",
+    producto: "Amoxicilina 500mg",
+    lote: "LT-2026-0412",
+    estado: "En ejecución",
+    avance: 72,
+    excepcionesAbiertas: 1,
+    reconciliacionPendiente: false,
+    tiempoLiberacionEstimado: "0.9 h",
+    operador: "M. Rodríguez",
+    oee: 87,
+    disponibilidad: 94,
+    rendimiento: 95,
+    calidad: 97,
+    velocidad: 320,
+  },
+  {
+    id: "L02",
+    nombre: "Línea 02 — Frascos",
+    producto: "Ibuprofeno 400mg",
+    lote: "LT-2026-0413",
+    estado: "En ejecución",
+    avance: 45,
+    excepcionesAbiertas: 3,
+    reconciliacionPendiente: true,
+    tiempoLiberacionEstimado: "2.4 h",
+    operador: "J. Fernández",
+    oee: 72,
+    disponibilidad: 81,
+    rendimiento: 90,
+    calidad: 98,
+    velocidad: 180,
+  },
+  {
+    id: "L03",
+    nombre: "Línea 03 — Blíster",
+    producto: "Paracetamol 1g",
+    lote: "LT-2026-0410",
+    estado: "En revisión",
+    avance: 100,
+    excepcionesAbiertas: 2,
+    reconciliacionPendiente: false,
+    tiempoLiberacionEstimado: "1.1 h",
+    operador: "L. Gómez",
+    oee: 91,
+    disponibilidad: 96,
+    rendimiento: 96,
+    calidad: 99,
+    velocidad: 340,
+  },
+  {
+    id: "L04",
+    nombre: "Línea 04 — Ampollas",
+    producto: "Solución salina 0.9%",
+    lote: "LT-2026-0414",
+    estado: "En ejecución",
+    avance: 28,
+    excepcionesAbiertas: 0,
+    reconciliacionPendiente: false,
+    tiempoLiberacionEstimado: "3.8 h",
+    operador: "C. Díaz",
+    oee: 89,
+    disponibilidad: 93,
+    rendimiento: 95,
+    calidad: 100,
+    velocidad: 210,
+  },
+  {
+    id: "L05",
+    nombre: "Línea 05 — Sobres",
+    producto: "Sales de rehidratación",
+    lote: "LT-2026-0409",
+    estado: "Detenido",
+    avance: 61,
+    excepcionesAbiertas: 5,
+    reconciliacionPendiente: true,
+    tiempoLiberacionEstimado: "—",
+    operador: "A. Pérez",
+    oee: 41,
+    disponibilidad: 52,
+    rendimiento: 84,
+    calidad: 94,
+    velocidad: 0,
+  },
+  {
+    id: "L06",
+    nombre: "Línea 06 — Frascos",
+    producto: "Jarabe pediátrico",
+    lote: "LT-2026-0411",
+    estado: "Liberado",
+    avance: 100,
+    excepcionesAbiertas: 0,
+    reconciliacionPendiente: false,
+    tiempoLiberacionEstimado: "Liberado",
+    operador: "S. Torres",
+    oee: 93,
+    disponibilidad: 97,
+    rendimiento: 96,
+    calidad: 100,
+    velocidad: 260,
+  },
+  {
+    id: "L07",
+    nombre: "Línea 07 — Blíster",
+    producto: "Omeprazol 20mg",
+    lote: "LT-2026-0415",
+    estado: "Programado",
+    avance: 0,
+    excepcionesAbiertas: 0,
+    reconciliacionPendiente: false,
+    tiempoLiberacionEstimado: "—",
+    operador: "Sin asignar",
+    oee: 0,
+    disponibilidad: 0,
+    rendimiento: 0,
+    calidad: 0,
+    velocidad: 0,
+  },
+  {
+    id: "L08",
+    nombre: "Línea 08 — Ampollas",
+    producto: "Vitamina B12",
+    lote: "LT-2026-0408",
+    estado: "En revisión",
+    avance: 100,
+    excepcionesAbiertas: 1,
+    reconciliacionPendiente: true,
+    tiempoLiberacionEstimado: "1.6 h",
+    operador: "R. Castro",
+    oee: 78,
+    disponibilidad: 88,
+    rendimiento: 91,
+    calidad: 97,
+    velocidad: 195,
+  },
+]
+
+export const excepciones: Excepcion[] = [
+  {
+    id: "EX-1042",
+    linea: "Línea 05",
+    lote: "LT-2026-0409",
+    descripcion: "Discrepancia en reconciliación de material de empaque (faltante 0.4%)",
+    severidad: "Crítica",
+    hora: "10:42",
+    estado: "En análisis",
+  },
+  {
+    id: "EX-1041",
+    linea: "Línea 02",
+    lote: "LT-2026-0413",
+    descripcion: "Lectura de código de barras inválida en estación de inspección",
+    severidad: "Mayor",
+    hora: "10:18",
+    estado: "Abierta",
+  },
+  {
+    id: "EX-1040",
+    linea: "Línea 03",
+    lote: "LT-2026-0410",
+    descripcion: "Firma electrónica pendiente en paso de verificación de impresión",
+    severidad: "Menor",
+    hora: "09:55",
+    estado: "Abierta",
+  },
+  {
+    id: "EX-1039",
+    linea: "Línea 05",
+    lote: "LT-2026-0409",
+    descripcion: "Parada de línea por desvío de peso fuera de rango",
+    severidad: "Crítica",
+    hora: "09:30",
+    estado: "En análisis",
+  },
+  {
+    id: "EX-1038",
+    linea: "Línea 01",
+    lote: "LT-2026-0412",
+    descripcion: "Temperatura de sellado por encima del límite por 12 segundos",
+    severidad: "Menor",
+    hora: "09:12",
+    estado: "Resuelta",
+  },
+  {
+    id: "EX-1037",
+    linea: "Línea 08",
+    lote: "LT-2026-0408",
+    descripcion: "Conciliación de prospectos pendiente de confirmación",
+    severidad: "Mayor",
+    hora: "08:47",
+    estado: "Abierta",
+  },
+]
+
+export const lotesEnRevision: Lote[] = [
+  { id: "LT-2026-0410", producto: "Paracetamol 1g", linea: "Línea 03", cantidad: 48000, estado: "En revisión", inicio: "08:10", reconciliacion: 98 },
+  { id: "LT-2026-0408", producto: "Vitamina B12", linea: "Línea 08", cantidad: 22000, estado: "En revisión", inicio: "07:25", reconciliacion: 91 },
+  { id: "LT-2026-0407", producto: "Loratadina 10mg", linea: "Línea 03", cantidad: 60000, estado: "En revisión", inicio: "06:40", reconciliacion: 100 },
+  { id: "LT-2026-0406", producto: "Metformina 850mg", linea: "Línea 01", cantidad: 75000, estado: "En revisión", inicio: "06:05", reconciliacion: 99 },
+  { id: "LT-2026-0405", producto: "Aspirina 100mg", linea: "Línea 02", cantidad: 90000, estado: "En revisión", inicio: "05:20", reconciliacion: 94 },
+]
+
+// Tiempo de liberación (horas) últimos 12 lotes — muestra la mejora vs proceso en papel
+export const tiempoLiberacion = [
+  { lote: "0398", horas: 2.1, objetivo: 1.5 },
+  { lote: "0399", horas: 1.8, objetivo: 1.5 },
+  { lote: "0400", horas: 1.6, objetivo: 1.5 },
+  { lote: "0401", horas: 1.9, objetivo: 1.5 },
+  { lote: "0402", horas: 1.4, objetivo: 1.5 },
+  { lote: "0403", horas: 1.2, objetivo: 1.5 },
+  { lote: "0404", horas: 1.3, objetivo: 1.5 },
+  { lote: "0405", horas: 1.1, objetivo: 1.5 },
+  { lote: "0406", horas: 1.0, objetivo: 1.5 },
+  { lote: "0407", horas: 1.2, objetivo: 1.5 },
+  { lote: "0408", horas: 0.9, objetivo: 1.5 },
+  { lote: "0409", horas: 1.1, objetivo: 1.5 },
+]
+
+// Excepciones por línea (incidencia)
+export const incidenciaPorLinea = [
+  { linea: "L01", excepciones: 4 },
+  { linea: "L02", excepciones: 9 },
+  { linea: "L03", excepciones: 6 },
+  { linea: "L04", excepciones: 2 },
+  { linea: "L05", excepciones: 12 },
+  { linea: "L06", excepciones: 1 },
+  { linea: "L07", excepciones: 0 },
+  { linea: "L08", excepciones: 5 },
+]
+
+// Producción del turno por hora (unidades empacadas, en miles)
+export const produccionPorHora = [
+  { hora: "06:00", unidades: 28 },
+  { hora: "07:00", unidades: 42 },
+  { hora: "08:00", unidades: 55 },
+  { hora: "09:00", unidades: 61 },
+  { hora: "10:00", unidades: 58 },
+  { hora: "11:00", unidades: 64 },
+  { hora: "12:00", unidades: 49 },
+  { hora: "13:00", unidades: 53 },
+]
+
+// Distribución del estado de las órdenes
+export const distribucionEstados = [
+  { estado: "En ejecución", valor: 3, fill: "var(--color-ejecucion)" },
+  { estado: "En revisión", valor: 3, fill: "var(--color-revision)" },
+  { estado: "Liberado", valor: 1, fill: "var(--color-liberado)" },
+  { estado: "Detenido", valor: 1, fill: "var(--color-detenido)" },
+]
+
+// Firmas electrónicas pendientes (21 CFR Part 11 / Anexo 11)
+export const firmas: Firma[] = [
+  {
+    id: "FIR-501",
+    documento: "Registro de empaque (BPR)",
+    paso: "Verificación de impresión de prospecto",
+    lote: "LT-2026-0410",
+    linea: "Línea 03",
+    responsable: "L. Gómez",
+    rol: "Operador",
+    vence: "11:30",
+    urgente: true,
+  },
+  {
+    id: "FIR-502",
+    documento: "Reconciliación de materiales",
+    paso: "Aprobación de conciliación final",
+    lote: "LT-2026-0408",
+    linea: "Línea 08",
+    responsable: "R. Castro",
+    rol: "Supervisor QA",
+    vence: "12:00",
+    urgente: false,
+  },
+  {
+    id: "FIR-503",
+    documento: "Desvío de calidad",
+    paso: "Cierre de investigación EX-1042",
+    lote: "LT-2026-0409",
+    linea: "Línea 05",
+    responsable: "P. Méndez",
+    rol: "Líder de Calidad",
+    vence: "11:15",
+    urgente: true,
+  },
+  {
+    id: "FIR-504",
+    documento: "Orden de acondicionamiento",
+    paso: "Liberación de línea para inicio",
+    lote: "LT-2026-0415",
+    linea: "Línea 07",
+    responsable: "S. Torres",
+    rol: "Supervisor de Producción",
+    vence: "13:00",
+    urgente: false,
+  },
+]
+
+// Alertas en tiempo real (timeline / audit trail)
+export const alertas: Alerta[] = [
+  {
+    id: "AL-9001",
+    tipo: "Crítica",
+    titulo: "Línea detenida por desvío de peso",
+    descripcion: "Línea 05 fuera de rango de peso por más de 60 s. Requiere intervención.",
+    linea: "Línea 05",
+    haceMin: 4,
+    resuelta: false,
+  },
+  {
+    id: "AL-9002",
+    tipo: "Advertencia",
+    titulo: "Reconciliación por debajo del umbral",
+    descripcion: "Lote LT-2026-0409 con faltante de 0.4% en material de empaque.",
+    linea: "Línea 05",
+    haceMin: 9,
+    resuelta: false,
+  },
+  {
+    id: "AL-9003",
+    tipo: "Advertencia",
+    titulo: "Firma electrónica próxima a vencer",
+    descripcion: "FIR-503 (cierre de desvío) vence en 15 minutos.",
+    linea: "Línea 05",
+    haceMin: 12,
+    resuelta: false,
+  },
+  {
+    id: "AL-9004",
+    tipo: "Info",
+    titulo: "Lote liberado automáticamente",
+    descripcion: "Línea 06 — Jarabe pediátrico liberado tras revisión por excepción.",
+    linea: "Línea 06",
+    haceMin: 23,
+    resuelta: true,
+  },
+  {
+    id: "AL-9005",
+    tipo: "Advertencia",
+    titulo: "Lectura de código de barras inválida",
+    descripcion: "Estación de inspección de Línea 02 rechazó 3 lecturas consecutivas.",
+    linea: "Línea 02",
+    haceMin: 31,
+    resuelta: false,
+  },
+  {
+    id: "AL-9006",
+    tipo: "Info",
+    titulo: "Desvío de temperatura resuelto",
+    descripcion: "Línea 01 — sellado normalizado tras ajuste automático.",
+    linea: "Línea 01",
+    haceMin: 48,
+    resuelta: true,
+  },
+]
+
+// Resumen del turno (factores del OEE global + métricas de digitalización)
+export const resumenTurno = {
+  oeeGlobal: 81,
+  disponibilidad: 86,
+  rendimiento: 92,
+  firstPassYield: 97,
+  lotesLiberados: 6,
+  tiempoLiberacionPromedio: "1.2 h",
+  papelGenerado: 0,
+  unidadesEmpacadas: 412, // en miles
+}
+
+// OEE de los últimos 7 días (tendencia global de planta)
+export const oeeHistorico = [
+  { dia: "Lun", oee: 76 },
+  { dia: "Mar", oee: 79 },
+  { dia: "Mié", oee: 74 },
+  { dia: "Jue", oee: 82 },
+  { dia: "Vie", oee: 80 },
+  { dia: "Sáb", oee: 85 },
+  { dia: "Hoy", oee: 81 },
+]
